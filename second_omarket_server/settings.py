@@ -69,6 +69,8 @@ TEMPLATES = [
     },
 ]
 
+AUTH_USER_MODEL = 'api2application.User'
+
 WSGI_APPLICATION = 'second_omarket_server.wsgi.application'
 
 

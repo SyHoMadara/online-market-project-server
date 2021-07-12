@@ -1,15 +1,15 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
-from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 
 class UserManager(BaseUserManager):
     def creat_user(self, email, first_name, last_name, password=None):
         if not email:
-            raise ValueError("User must have email address")
+            return ValueError("User must have email address")
         elif not (first_name and last_name):
-            raise ValueError("First name and Last name required")
+            return ValueError("First name and Last name required")
         user = self.model(
             email=self.normalize_email(email),
             first_name=first_name,
@@ -35,9 +35,9 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     # user properties
-    email = models.EmailField(verbose_name='email', max_length=60, unique=True)
-    first_name = models.CharField(max_length=20)
-    last_name = models.CharField(max_length=20)
+    email = models.EmailField(verbose_name='Email', max_length=60, unique=True)
+    first_name = models.CharField(max_length=20, verbose_name="First name")
+    last_name = models.CharField(max_length=20, verbose_name="Last name")
     phone_number = models.CharField(max_length=14, null=True, blank=False)
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
@@ -46,11 +46,13 @@ class User(AbstractBaseUser):
     # permutations
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=True)
     is_supperuser = models.BooleanField(default=False)
 
+    objects = UserManager()
+
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['fist_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     def __str__(self):
         return self.email
@@ -68,7 +70,7 @@ class Product(models.Model):
     title = models.CharField(max_length=50, blank=False)
     cost = models.DecimalField(decimal_places=0, max_digits=12)
     rate = models.IntegerField(default=0)  # between 0 and 5.
-    user = models.ForeignKey('User', blank=True, on_delete=models.CASCADE)
+    user = models.ForeignKey('User', blank=True, null=True,on_delete=models.CASCADE)
     description = models.CharField(max_length=400, default="description", blank=True)
     product_category = models.ForeignKey('ProductCategory', related_name="Products", null=True,
                                          on_delete=models.CASCADE)
