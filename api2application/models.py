@@ -1,53 +1,62 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
+from django.contrib.auth.models import User
 
-# users
-class User(models.Model):
-    USER_TYPE = (
-        (0, 'SUPER_ADMIN'),
-        (1, 'NORMAL_ADMIN'),
-        (2, 'NORMAL_USER')
-    )
 
-    USER_RATE = (
-        (0, "Newbie"),
-        (1, "Pupil"),
-        (2, "Specialist"),
-        (3, "Expert"),
-        (4, "CandiDate Master"),
-        (5, "Master"),
-        (6, "Grand Master"),
-        (7, "International Grand Master"),
-        (8, "International Legendary Grand Master"),
-        (9, "Admin"),
-        (10, "Creator")
-    )
-
-    email_address = models.CharField(max_length=60, blank=False)
-    password = models.CharField(max_length=60, blank=False)
-    first_name = models.CharField(max_length=30, blank=False)
-    last_name = models.CharField(max_length=30, blank=False)
-    phone_number = models.CharField(max_length=15, null=True, blank=False)
-
-    user_type = models.SmallIntegerField(choices=USER_TYPE, default=2)
-    user_rate = models.SmallIntegerField(choices=USER_RATE, default=0)
+class Employee(models.Model):
+    user = models.OneToOneField('User', on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self.id) + "." + self.first_name + " " + self.last_name + " " + self.email_address
+        return str(self.default_user.id) + self.default_user.email
+
+
+# # users
+# class User(models.Model):
+#     USER_TYPE = (
+#         (0, 'SUPER_ADMIN'),
+#         (1, 'NORMAL_ADMIN'),
+#         (2, 'NORMAL_USER')
+#     )
+#
+#     USER_RATE = (
+#         (0, "Newbie"),
+#         (1, "Pupil"),
+#         (2, "Specialist"),
+#         (3, "Expert"),
+#         (4, "CandiDate Master"),
+#         (5, "Master"),
+#         (6, "Grand Master"),
+#         (7, "International Grand Master"),
+#         (8, "International Legendary Grand Master"),
+#         (9, "Admin"),
+#         (10, "Creator")
+#     )
+#
+#     email_address = models.CharField(max_length=60, blank=False)
+#     password = models.CharField(max_length=60, blank=False)
+#     first_name = models.CharField(max_length=30, blank=False)
+#     last_name = models.CharField(max_length=30, blank=False)
+#     phone_number = models.CharField(max_length=15, null=True, blank=False)
+#
+#     user_type = models.SmallIntegerField(choices=USER_TYPE, default=2)
+#     user_rate = models.SmallIntegerField(choices=USER_RATE, default=0)
+#
+#     def __str__(self):
+#         return str(self.id) + "." + self.email_address
 
 
 class Product(models.Model):
     title = models.CharField(max_length=50, blank=False)
-    cost = models.DecimalField(decimal_places=3, max_digits=12)
+    cost = models.DecimalField(decimal_places=0, max_digits=12)
     rate = models.IntegerField(default=0)  # between 0 and 5.
-    user = models.ForeignKey('User', null=True, on_delete=models.CASCADE)
+    # user = models.ForeignKey('api2application.models.Employee', null=True, blank=True, on_delete=models.CASCADE)
     description = models.CharField(max_length=400, default="description", blank=True)
     product_category = models.ForeignKey('ProductCategory', related_name="Products", null=True,
                                          on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.title + " : " + str(self.user.id) + "." + self.user.email_address
+        return self.title #+ " : " + str(self.user.id) + "." + self.user.email_address
 
 
 # DIGITAL_TYPE = (
