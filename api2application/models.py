@@ -1,14 +1,46 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 
-class Employee(models.Model):
-    user = models.OneToOneField('User', on_delete=models.CASCADE)
+class UserManager(BaseUserManager):
+    def creat_user(self, email, first_name, last_name, password=None):
+        if not email:
+            return ValueError("User must have email address")
+        elif not (first_name and last_name):
+            return ValueError("First name and Last name required")
+        user = self.model(
+
+        )
+
+
+class User(AbstractBaseUser):
+    email = models.EmailField(verbose_name='email', max_length=60, unique=True)
+    # username = models.CharField(max_length=30, unique=True)
+    first_name = models.CharField(max_length=20)
+    last_name = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=14, null=True, blank=False)
+    date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
+    last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
+
+    # permutations
+    is_admin = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_supperuser = models.BooleanField(default=False)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['fist_name', 'last_name']
 
     def __str__(self):
-        return str(self.default_user.id) + self.default_user.email
+        return self.email
+
+    def has_perm(self, perm, obj=None):
+        return self.is_admin
+
+    def has_module_perms(self, app_label):
+        return True
 
 
 # # users
@@ -56,7 +88,7 @@ class Product(models.Model):
                                          on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.title #+ " : " + str(self.user.id) + "." + self.user.email_address
+        return self.title  # + " : " + str(self.user.id) + "." + self.user.email_address
 
 
 # DIGITAL_TYPE = (
