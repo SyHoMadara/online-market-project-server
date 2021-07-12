@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 from mptt.models import MPTTModel, TreeForeignKey
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
@@ -7,7 +8,8 @@ from django.apps import apps
 from django.contrib import auth
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.hashers import make_password
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.db import models
@@ -15,7 +17,7 @@ from django.db.models.manager import EmptyManager
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from .validators import UnicodeUsernameValidator
+from handlers.uniqecode import unique_slugify
 
 
 def update_last_login(sender, user, **kwargs):
@@ -25,111 +27,6 @@ def update_last_login(sender, user, **kwargs):
     """
     user.last_login = timezone.now()
     user.save(update_fields=['last_login'])
-
-
-class PermissionManager(models.Manager):
-    use_in_migrations = True
-
-    def get_by_natural_key(self, codename, app_label, model):
-        return self.get(
-            codename=codename,
-            content_type=ContentType.objects.db_manager(self.db).get_by_natural_key(app_label, model),
-        )
-
-
-class Permission(models.Model):
-    """
-    The permissions system provides a way to assign permissions to specific
-    users and groups of users.
-
-    The permission system is used by the Django admin site, but may also be
-    useful in your own code. The Django admin site uses permissions as follows:
-
-        - The "add" permission limits the user's ability to view the "add" form
-          and add an object.
-        - The "change" permission limits a user's ability to view the change
-          list, view the "change" form and change an object.
-        - The "delete" permission limits the ability to delete an object.
-        - The "view" permission limits the ability to view an object.
-
-    Permissions are set globally per type of object, not per specific object
-    instance. It is possible to say "Mary may change news stories," but it's
-    not currently possible to say "Mary may change news stories, but only the
-    ones she created herself" or "Mary may only change news stories that have a
-    certain status or publication date."
-
-    The permissions listed above are automatically created for each model.
-    """
-    name = models.CharField(_('name'), max_length=255)
-    content_type = models.ForeignKey(
-        ContentType,
-        models.CASCADE,
-        verbose_name=_('content type'),
-    )
-    codename = models.CharField(_('codename'), max_length=100)
-
-    objects = PermissionManager()
-
-    class Meta:
-        verbose_name = _('permission')
-        verbose_name_plural = _('permissions')
-        unique_together = [['content_type', 'codename']]
-        ordering = ['content_type__app_label', 'content_type__model', 'codename']
-
-    def __str__(self):
-        return '%s | %s' % (self.content_type, self.name)
-
-    def natural_key(self):
-        return (self.codename,) + self.content_type.natural_key()
-
-    natural_key.dependencies = ['contenttypes.contenttype']
-
-
-class GroupManager(models.Manager):
-    """
-    The manager for the auth's Group model.
-    """
-    use_in_migrations = True
-
-    def get_by_natural_key(self, name):
-        return self.get(name=name)
-
-
-class Group(models.Model):
-    """
-    Groups are a generic way of categorizing users to apply permissions, or
-    some other label, to those users. A user can belong to any number of
-    groups.
-
-    A user in a group automatically has all the permissions granted to that
-    group. For example, if the group 'Site editors' has the permission
-    can_edit_home_page, any user in that group will have that permission.
-
-    Beyond permissions, groups are a convenient way to categorize users to
-    apply some label, or extended functionality, to them. For example, you
-    could create a group 'Special users', and you could write code that would
-    do special things to those users -- such as giving them access to a
-    members-only portion of your site, or sending them members-only email
-    messages.
-    """
-    name = models.CharField(_('name'), max_length=150, unique=True)
-    permissions = models.ManyToManyField(
-        Permission,
-        verbose_name=_('permissions'),
-        blank=True,
-    )
-
-    objects = GroupManager()
-
-    class Meta:
-        verbose_name = _('group')
-        verbose_name_plural = _('groups')
-
-    def __str__(self):
-        return self.name
-
-    def natural_key(self):
-        return (self.name,)
 
 
 class UserManager(BaseUserManager):
@@ -322,15 +219,15 @@ class PermissionsMixin(models.Model):
 
 
 class AbstractUser(AbstractBaseUser, PermissionsMixin):
-    first_name = models.CharField(_('first name'), max_length=150, blank=True)
+    first_name = models.CharField(_('first name'), max_length=150, blank=False)
     """
     An abstract base class implementing a fully featured User model with
     admin-compliant permissions.
 
     email and password are required. Other fields are optional.
     """
-    last_name = models.CharField(_('last name'), max_length=150, blank=True)
-    email = models.EmailField(_('email address'), blank=True)
+    last_name = models.CharField(_('last name'), max_length=150, blank=False)
+    email = models.EmailField(_('email address'), blank=False, unique=True)
     is_staff = models.BooleanField(
         _('staff status'),
         default=True,
@@ -451,9 +348,7 @@ class AnonymousUser:
 
 class User(AbstractUser):
     # user properties
-    phone_number = models.CharField(max_length=14, null=True, blank=False)
-    date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
-    last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
+    phone_number = models.CharField(verbose_name='Phone Number', max_length=14, null=True, blank=False)
     # picture = models.ImageField()
 
     USERNAME_FIELD = 'email'
@@ -465,6 +360,7 @@ class User(AbstractUser):
 
 class Product(models.Model):
     title = models.CharField(max_length=50, blank=False)
+    slug = models.SlugField(allow_unicode=True, unique=True)  # user_email/Digital/Phone/samsung-A31-14
     cost = models.DecimalField(decimal_places=0, max_digits=12)
     rate = models.IntegerField(default=0)  # between 0 and 5.
     user = models.ForeignKey('User', blank=True, null=True, on_delete=models.CASCADE)
@@ -472,12 +368,19 @@ class Product(models.Model):
     product_category = models.ForeignKey('ProductCategory', related_name="Products", null=True,
                                          on_delete=models.CASCADE)
 
+    def save(self, *args, **kwargs):
+        # saving slug
+        slug_str = self.user.email + '/' + self.product_category.slug + '/' + self.title + "?" + self.id
+        self.slug = slugify(slug_str)
+        super(Product, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.title + " : " + self.user.id.__str__() + "." + self.user.email.__str__()
 
 
 class ProductCategory(MPTTModel):
     name = models.CharField(max_length=200)
+    slug = models.SlugField(allow_unicode=True, unique=True)  # Digital/Laptop
     parent = TreeForeignKey(
         'self',
         blank=True,
@@ -489,6 +392,17 @@ class ProductCategory(MPTTModel):
     class Meta:
         verbose_name_plural = "Product Categories"
 
+    def save(self, *args, **kwargs):
+        # saving slug
+        full_path = [self.name]
+        k = self.parent
+        while k is not None:
+            full_path.append(k.name)
+            k = k.parent
+        self.slug = '/'.join(full_path[::-1])
+        self.slug = slugify(self.slug)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         full_path = [self.name]
         k = self.parent
@@ -496,8 +410,9 @@ class ProductCategory(MPTTModel):
             full_path.append(k.name)
             k = k.parent
 
-        return ' ==> '.join(full_path[::-1])
+        return '/'.join(full_path[::-1])
 
 
-class Pictures(models.Model):
-    product = models.OneToOneField('Product', on_delete=models.CASCADE)
+class Picture(models.Model):
+    product = models.OneToOneField('Product', on_delete=models.CASCADE, null=True)
+    group = models.ForeignKey('self', verbose_name='Pictures', null=True, blank=True)
