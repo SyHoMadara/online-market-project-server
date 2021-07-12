@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.utils.text import slugify
 from mptt.models import MPTTModel, TreeForeignKey
@@ -359,8 +361,10 @@ class User(AbstractUser):
 
 
 class Product(models.Model):
+    id = models.UUIDField(primary_key=True, verbose_name='Id', default=uuid.uuid4, help_text='uniq id of product')
     title = models.CharField(max_length=50, blank=False)
-    slug = models.SlugField(allow_unicode=True, unique=True)  # user_email/Digital/Phone/samsung-A31-14
+    # user_email/Digital/Phone/209d4ca6-e9fe-4441-9d59-811fa58050b7
+    slug = models.SlugField(allow_unicode=True, unique=True, null=True)
     cost = models.DecimalField(decimal_places=0, max_digits=12)
     rate = models.IntegerField(default=0)  # between 0 and 5.
     user = models.ForeignKey('User', blank=True, null=True, on_delete=models.CASCADE)
@@ -370,7 +374,7 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         # saving slug
-        slug_str = self.user.email + '/' + self.product_category.slug + '/' + self.title + "?" + self.id
+        slug_str = self.user.email + '/' + self.product_category.slug + '/' + self.id
         self.slug = slugify(slug_str)
         super(Product, self).save(*args, **kwargs)
 
@@ -380,7 +384,7 @@ class Product(models.Model):
 
 class ProductCategory(MPTTModel):
     name = models.CharField(max_length=200)
-    slug = models.SlugField(allow_unicode=True, unique=True)  # Digital/Laptop
+    slug = models.SlugField(allow_unicode=True, unique=True, null=True)  # Digital/Laptop
     parent = TreeForeignKey(
         'self',
         blank=True,
