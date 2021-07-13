@@ -47,7 +47,7 @@ Usage
 
 **Creat supperuser** : 
 ```angular2html
-    python manage.py creatsupperuser
+    python manage.py createsuperuser
 ```
 
 **Run server** :
