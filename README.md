@@ -54,7 +54,7 @@ Usage
 ```angular2html
     python manage.py runserver
 ```
-Then go to you browser and type `127.0.0.1/admin` at url bar or click on [this](http://127.0.0.1:8000/admin)
+Then go to you browser and type `127.0.0.1:8000` at url bar or click on [this](http://127.0.0.1:8000)
 
 remember don't close command line or kill process
 
