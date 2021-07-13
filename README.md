@@ -21,7 +21,7 @@ Installation
 ------------
 **Linux and Mac**
 
-First install pip3 and python3
+First install python3 and pip3
 
 ```angular2html
     sudo apt install python3 python3-pip
