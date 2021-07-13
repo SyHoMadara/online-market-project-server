@@ -1,10 +1,8 @@
 import uuid
 
-from django.db import models
 from django.utils.text import slugify
 from mptt.models import MPTTModel, TreeForeignKey
-
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from second_omarket_server.settings import BASE_DIR
 
 from django.apps import apps
 from django.contrib import auth
@@ -351,7 +349,6 @@ class AnonymousUser:
 class User(AbstractUser):
     # user properties
     phone_number = models.CharField(verbose_name='Phone Number', max_length=14, null=True, blank=False)
-    # picture = models.ImageField()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
@@ -359,32 +356,34 @@ class User(AbstractUser):
     def __str__(self):
         return self.id.__str__() + '.' + self.email
 
+    def get_full_name(self):
+        return self.first_name + ' ' + self.last_name
+
 
 class Product(models.Model):
     id = models.UUIDField(primary_key=True, verbose_name='Id', default=uuid.uuid4, help_text='uniq id of product')
     title = models.CharField(max_length=50, blank=False)
     # user_email/Digital/Phone/209d4ca6-e9fe-4441-9d59-811fa58050b7
-    slug = models.SlugField(allow_unicode=True, unique=True, null=True)
+    slug = models.SlugField(max_length=25, null=True, blank=True, unique=True)
     cost = models.DecimalField(decimal_places=0, max_digits=12)
     rate = models.IntegerField(default=0)  # between 0 and 5.
-    user = models.ForeignKey('User', blank=True, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey('User', blank=True, on_delete=models.CASCADE)
     description = models.CharField(max_length=400, default="description", blank=True)
-    product_category = models.ForeignKey('ProductCategory', related_name="Products", null=True,
-                                         on_delete=models.CASCADE)
+    product_category = models.ForeignKey('ProductCategory', related_name="Products", on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         # saving slug
-        slug_str = self.user.email + '/' + self.product_category.slug + '/' + self.id
-        self.slug = slugify(slug_str)
+        slug_str = self.user.email + '/' + self.product_category.slug + '/' + slugify(self.id)
+        self.slug = slug_str
         super(Product, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.title + " : " + self.user.id.__str__() + "." + self.user.email.__str__()
+        return self.title + " : " + self.user.id.__str__() + "." + self.user.get_full_name()
 
 
 class ProductCategory(MPTTModel):
     name = models.CharField(max_length=200)
-    slug = models.SlugField(allow_unicode=True, unique=True, null=True)  # Digital/Laptop
+    slug = models.SlugField(allow_unicode=True, unique=True, null=True, blank=True)  # Digital/Laptop
     parent = TreeForeignKey(
         'self',
         blank=True,
@@ -398,13 +397,13 @@ class ProductCategory(MPTTModel):
 
     def save(self, *args, **kwargs):
         # saving slug
-        full_path = [self.name]
+        self.slug = None
+        full_path = [slugify(self.name)]
         k = self.parent
         while k is not None:
-            full_path.append(k.name)
+            full_path.append(slugify(k.name))
             k = k.parent
         self.slug = '/'.join(full_path[::-1])
-        self.slug = slugify(self.slug)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -417,6 +416,45 @@ class ProductCategory(MPTTModel):
         return '/'.join(full_path[::-1])
 
 
-class Picture(models.Model):
-    product = models.OneToOneField('Product', on_delete=models.CASCADE, null=True)
-    group = models.ForeignKey('self', verbose_name='Pictures', null=True, blank=True)
+class PictureAbstract(models.Model):
+    id = models.UUIDField(primary_key=True, verbose_name='Id', default=uuid.uuid4, help_text='uniq id of Pictures')
+    title = models.CharField(max_length=20, blank=False)
+    slug = models.SlugField(max_length=25, null=True, blank=True, unique=True)
+    image = models.ImageField(verbose_name='Image', null=True, blank=True, upload_to='files/images')
+
+    class Meta:
+        abstract = True
+
+
+class UserPicture(PictureAbstract):
+    user = models.OneToOneField('User', on_delete=models.CASCADE, null=True)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.slug = None
+        if self.user is None:
+            raise ValueError("Picture most belonging a user or product.")
+        self.slug = slugify(self.user.get_full_name() + ' ' + self.user.id.__str__()) + "/image/" + slugify(self.id)
+        self.image.name = self.user.email + '_' + self.id.__str__()
+        super().save(force_insert, force_update, using, update_fields)
+
+    def __str__(self):
+        if self.user is None:
+            raise ValueError("Picture most belonging a user.")
+        return self.user.id.__str__() + "." + self.user.get_full_name() + ' / ' + self.title
+
+
+class ProductPicture(PictureAbstract):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, null=True)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.slug = None
+        if self.product is None:
+            raise ValueError("Picture most belonging a user or product.")
+        self.slug = self.product.slug + "/images/" + slugify(self.id)
+        self.image.name = self.product.slug + '-' + self.id.__str__()
+        super().save(force_insert, force_update, using, update_fields)
+
+    def __str__(self):
+        if self.product is None:
+            raise ValueError("Picture most belonging a user.")
+        return self.product.title + '/' + self.title

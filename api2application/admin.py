@@ -26,7 +26,7 @@ sensitive_post_parameters_m = method_decorator(sensitive_post_parameters())
 from .models import Permission
 
 admin.site.register(Permission)
-admin.site.register(Picture)
+
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -44,7 +44,7 @@ class UserAdmin(admin.ModelAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'first_name', 'phone_number','last_name','password1', 'password2'),
+            'fields': ('email', 'first_name', 'phone_number', 'last_name', 'password1', 'password2'),
         }),
     )
     form = UserChangeForm
@@ -200,8 +200,44 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(ProductCategory)
 class ProductCategoriesModel(admin.ModelAdmin):
     list_display = ['__str__', 'parent']
+    readonly_fields = ['slug', ]
 
 
 @admin.register(Product)
 class ProductCategoriesModel(admin.ModelAdmin):
     list_display = ['title', 'cost', 'product_category']
+    fieldsets = (
+        (None, {'fields': ('title', 'cost', 'rate', 'user', 'description', 'product_category')}),
+        (_('Properties'), {'fields': ('slug', 'id')}),
+    )
+    readonly_fields = [
+        'slug',
+        'id',
+    ]
+
+
+@admin.register(UserPicture)
+class PictureUserModel(admin.ModelAdmin):
+    list_display = ['__str__']
+    fieldsets = (
+        (None, {'fields': ('title', 'user', 'image')}),
+        (_('Properties'), {'fields': ('slug', 'id')}),
+    )
+
+    readonly_fields = [
+        'slug',
+        'id',
+    ]
+
+@admin.register(ProductPicture)
+class PictureUserModel(admin.ModelAdmin):
+    list_display = ['__str__']
+    fieldsets = (
+        (None, {'fields': ('title', 'product', 'image')}),
+        (_('Properties'), {'fields': ('slug', 'id')}),
+    )
+
+    readonly_fields = [
+        'slug',
+        'id',
+    ]
