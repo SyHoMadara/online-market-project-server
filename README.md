@@ -1,7 +1,7 @@
 Simple Online Market server
 ===========================
 
-This is simple Django project server to hase api with
+This is simple [Django](https://www.djangoproject.com/) project server to hase api with
 my [android application](https://github.com/rbehzad/onlineMarket-project.git)
 
 It contains these features:
