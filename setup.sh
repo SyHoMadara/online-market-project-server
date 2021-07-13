@@ -1,8 +1,10 @@
 #!/bin/bash
-
+export PS1=""
+clear
 
 # installing python requirements
 
+clear
 
 # migrate
 python manage.py makemigrations
