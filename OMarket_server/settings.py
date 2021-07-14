@@ -39,11 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # res framework
-    'rest_framework'
+    'rest_framework',
     
     # market apps
-    'account.app.AccountConfig'
-    'product.app.ProductConfig'
+    'account.apps.AccountConfig',
+    'product.apps.ProductConfig',
 ]
 
 MIDDLEWARE = [
