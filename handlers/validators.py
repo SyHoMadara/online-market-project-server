@@ -1,25 +1,6 @@
 import re
+from django.contrib.auth.validators import *
+from django.contrib.auth.password_validation import *
+EMAIL_REGEX = '[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}'
+PASSWORD_REGEX = ''
 
-from django.core import validators
-from django.utils.deconstruct import deconstructible
-from django.utils.translation import gettext_lazy as _
-
-
-@deconstructible
-class ASCIIUsernameValidator(validators.RegexValidator):
-    regex = r'^[\w.@+-]+\Z'
-    message = _(
-        'Enter a valid username. This value may contain only English letters, '
-        'numbers, and @/./+/-/_ characters.'
-    )
-    flags = re.ASCII
-
-
-@deconstructible
-class UnicodeUsernameValidator(validators.RegexValidator):
-    regex = r'^[\w.@+-]+\Z'
-    message = _(
-        'Enter a valid username. This value may contain only letters, '
-        'numbers, and @/./+/-/_ characters.'
-    )
-    flags = 0

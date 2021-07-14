@@ -16,10 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include
 from django.urls import re_path
-from api2application.api.views import  api_details_user_view
+from api2application.api.views import  get_user_view
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
-    re_path(r'^user/', include('api2application.api.urls', namespace='user_api')),
-    re_path(r'^product/', include('api2application.api.urls', namespace='product_api')),
-    re_path(r'^category/', include('api2application.api.urls', namespace='product_category_api')),
+    re_path(r'^api/user/', include('api2application.api.urls', namespace='user_api')),
+    re_path(r'^api/product/', include('api2application.api.urls', namespace='product_api')),
+    re_path(r'^api/category/', include('api2application.api.urls', namespace='product_category_api')),
 ]
