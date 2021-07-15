@@ -2,14 +2,14 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from account.api.serializer import UserSerializer
+from account.api.serializer import UserSerializer, RegistrationUserSerializer
 from ..models import User
 
 OK = status.HTTP_200_OK
 BAD_REQUEST = status.HTTP_400_BAD_REQUEST
 
 
-@api_view(['GET', 'PUT',])
+@api_view(['GET', 'PUT', 'POST'])
 def account_view(request, email):
     method = request.method
     if method == 'GET':
@@ -18,6 +18,8 @@ def account_view(request, email):
         return update_account_view(request, email)
     # elif method == 'DELETE':
     #     return delete_user_view(request, email)
+    elif method == 'POST':
+        return register_account_view(request)
     else:
         return Response(status=BAD_REQUEST)
 
@@ -32,6 +34,7 @@ def get_account_view(request, email):
     return Response(serializer.data, status=OK)
 
 
+# todo fix update account view
 def update_account_view(request, email):
     try:
         user = User.objects.get(email=email)
@@ -56,6 +59,22 @@ def update_account_view(request, email):
         this_status = BAD_REQUEST
     return Response(data=data, status=this_status)
 
+
+@api_view(['POST', ])
+def register_account_view(request):
+    if request.method == 'POST':
+        serializer = RegistrationUserSerializer(data=request.data)
+        data = {}
+        if serializer.is_valid():
+            user = serializer.save()
+            data['response'] = 'successfully registered a new user'
+            data['email'] = user.email
+            data['fist_name'] = user.first_name
+            data['last_name'] = user.last_name
+        else:
+            data = serializer.errors
+        return Response(data=data)
+
 #
 # def delete_account_view(request, email):
 #     try:
@@ -71,4 +90,3 @@ def update_account_view(request, email):
 #         data['error'].append('DELETE_FAILED')
 #         this_status = BAD_REQUEST
 #     return Response(status=this_status, data=data)
-
