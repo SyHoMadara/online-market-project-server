@@ -200,7 +200,7 @@ class User(AbstractUser):
 
     # methods
     def __str__(self):
-        return self.id.__str__() + '.' + self.email
+        return self.email
 
     def save(self, *args, **kwargs):
         self.profile_image.name = f'{self.email.__str__()}_profile_image.png'

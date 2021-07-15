@@ -63,16 +63,16 @@ def update_account_view(request, email):
 @api_view(['POST', ])
 def register_account_view(request):
     if request.method == 'POST':
-        serializer = RegistrationUserSerializer(data=request.data)
+        serialized_data = RegistrationUserSerializer(data=request.data)
         data = {}
-        if serializer.is_valid():
-            user = serializer.save()
+        if serialized_data.is_valid():
+            user = serialized_data.save()
             data['response'] = 'successfully registered a new user'
             data['email'] = user.email
             data['fist_name'] = user.first_name
             data['last_name'] = user.last_name
         else:
-            data = serializer.errors
+            data = serialized_data.errors
         return Response(data=data)
 
 #
