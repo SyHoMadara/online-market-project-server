@@ -10,6 +10,8 @@ It contains these features:
 
 1. Admin page that you can log in and creat or update database graphically.
 1. Creat user and give it some permutations from supper user (you can do it from admin page)
+1. When you want register, password validators will call like password not be common, only numeric, similar to user
+   info, etc.
 
 **Database**
 
@@ -44,19 +46,20 @@ Usage
 -----
 *In project folder*
 
+**Creat supperuser** :
 
-**Creat supperuser** : 
 ```angular2html
     python manage.py createsuperuser
 ```
 
 **Run server** :
+
 ```angular2html
     python manage.py runserver
 ```
+
 Then go to you browser and type `127.0.0.1:8000` at url bar or click on [this](http://127.0.0.1:8000)
 
 remember don't close command line or kill process
-
 
 **Creat normal user** : After login as supperuser you can click on User and add user or update a user 
