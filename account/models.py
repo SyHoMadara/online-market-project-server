@@ -2,8 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin
-from django.contrib.auth.models import _user_get_permissions, _user_has_perm, _user_has_module_perms
+from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin, AbstractUser
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -33,14 +32,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         ),
     )
 
-    class Meta:
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
-
     # settings
     USERNAME_FIELD = ['email']
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'password']
     objects = UserManager
+
+    # classes
+    class Meta(AbstractUser.Meta):
+        swappable = 'AUTH_USER_MODEL'
+        verbose_name = _('user')
+        verbose_name_plural = _('users')
 
     # methods
     def clean(self):
