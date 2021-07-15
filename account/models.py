@@ -175,13 +175,33 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
+PROFILE_IMAGE_FILE_PATH = 'files/images/users/'
+
+
+def get_image_profile_default():
+    return 'files/images/users/default/default_image.jpg'
+
+
 class User(AbstractUser):
     # user properties
     phone_number = models.CharField(verbose_name='Phone Number', max_length=14, null=True, blank=True)
-    image = models.ImageField(verbose_name='Image', null=True, blank=True, upload_to='files/images')
+    profile_image = models.ImageField(
+        default=get_image_profile_default,
+        verbose_name='Image Profile',
+        upload_to='files/images/users/'
+    )
 
+    # settings
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
+    hide_email = models.BooleanField(default=True)
+    hide_phone_number = models.BooleanField(default=True)
+    hide_image_profile = models.BooleanField(default=True)
 
+    # methods
     def __str__(self):
         return self.id.__str__() + '.' + self.email
+
+    def save(self, *args, **kwargs):
+        self.profile_image.name = f'{self.email.__str__()}_profile_image.png'
+        super().save(*args, **kwargs)
