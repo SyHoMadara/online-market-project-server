@@ -9,6 +9,12 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+# token authentication
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
+
 
 def update_last_login(sender, user, **kwargs):
     """
@@ -77,7 +83,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_user(self, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(email, password, **extra_fields)
 
@@ -205,3 +211,9 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         self.profile_image.name = f'{self.email.__str__()}_profile_image.png'
         super().save(*args, **kwargs)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
