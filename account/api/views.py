@@ -9,20 +9,20 @@ OK = status.HTTP_200_OK
 BAD_REQUEST = status.HTTP_400_BAD_REQUEST
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def user_view(request, email):
+@api_view(['GET', 'PUT',])
+def account_view(request, email):
     method = request.method
     if method == 'GET':
-        return get_user_view(request, email)
+        return get_account_view(request, email)
     elif method == 'PUT':
-        return update_user_view(request, email)
-    elif method == 'DELETE':
-        return delete_user_view(request, email)
+        return update_account_view(request, email)
+    # elif method == 'DELETE':
+    #     return delete_user_view(request, email)
     else:
         return Response(status=BAD_REQUEST)
 
 
-def get_user_view(request, email):
+def get_account_view(request, email):
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
@@ -32,7 +32,7 @@ def get_user_view(request, email):
     return Response(serializer.data, status=OK)
 
 
-def update_user_view(request, email):
+def update_account_view(request, email):
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
@@ -56,19 +56,19 @@ def update_user_view(request, email):
         this_status = BAD_REQUEST
     return Response(data=data, status=this_status)
 
-
-def delete_user_view(request, email):
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    data = {'error': list(), 'success': list()}
-    del_success = user.delete()
-    if del_success:
-        data['success'].append('DELETE_SUCCESS')
-        this_status = OK
-    else:
-        data['error'].append('DELETE_FAILED')
-        this_status = BAD_REQUEST
-    return Response(status=this_status, data=data)
+#
+# def delete_account_view(request, email):
+#     try:
+#         user = User.objects.get(email=email)
+#     except User.DoesNotExist:
+#         return Response(status=status.HTTP_404_NOT_FOUND)
+#     data = {'error': list(), 'success': list()}
+#     del_success = user.delete()
+#     if del_success:
+#         data['success'].append('DELETE_SUCCESS')
+#         this_status = OK
+#     else:
+#         data['error'].append('DELETE_FAILED')
+#         this_status = BAD_REQUEST
+#     return Response(status=this_status, data=data)
 
