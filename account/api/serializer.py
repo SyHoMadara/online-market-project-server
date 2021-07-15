@@ -1,5 +1,8 @@
+from django.contrib.auth import password_validation
+from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
-from rest_framework.serializers import empty, ModelSerializer
+
 from ..models import User
 
 
@@ -28,6 +31,8 @@ class RegistrationUserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True}
         }
 
+    password_errors = {}
+
     def save(self):
         user = User(
             email=self.validated_data['email'],
@@ -39,6 +44,13 @@ class RegistrationUserSerializer(serializers.ModelSerializer):
 
         if password != password2:
             raise serializers.ValidationError({'password': 'Password mis match'})
-        user.set_password(password)
+        try:
+            password_validation.validate_password(password, user)
+        except ValidationError as e:
+            self.password_errors['password'] = []
+            for ex in e:
+                self.password_errors['password'].append(ex)
+            raise serializers.ValidationError(self.password_errors)
+        user.password = make_password(password)
         user.save()
         return user
