@@ -74,6 +74,8 @@ TEMPLATES = [
     },
 ]
 
+AUTH_USER_MODEL = 'account.User'
+
 WSGI_APPLICATION = 'OMarket_server.wsgi.application'
 
 

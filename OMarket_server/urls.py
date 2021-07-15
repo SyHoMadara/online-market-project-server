@@ -22,7 +22,7 @@ urlpatterns = [
 
     # apis
     re_path(r'^api/user/', include('account.api.urls', namespace='user_api')),
-    re_path(r'^api/product/', include('product.api.urls', namespace='product_api')),
-    re_path(r'^api/category/', include('product.api.urls', namespace='product_category_api')),
+    # re_path(r'^api/product/products/', include('product.api.urls', namespace='product_api')),
+    # re_path(r'^api/pdoduct/category/', include('product.api.urls', namespace='product_category_api')),
 
 ]
