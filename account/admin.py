@@ -31,10 +31,14 @@ class UserAdmin(admin.ModelAdmin):
         (None, {'fields': ('email', 'password')}),
         (_('Personal info'), {'fields': ('first_name', 'last_name', 'phone_number', 'profile_image')}),
         (_('Permissions'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'email_verified','groups', 'user_permissions'),
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
+    readonly_fields = [
+        'last_login',
+        'email_verified',
+    ]
 
     add_fieldsets = (
         (None, {
