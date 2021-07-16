@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     # market apps
-    'account',
-    'product',
+    'account.apps.AccountConfig',
+    'product.apps.ProductConfig',
 ]
 
 REST_FRAMEWORK = {
