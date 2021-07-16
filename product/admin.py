@@ -24,7 +24,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductCategoryAdmin(admin.ModelAdmin):
     fieldsets = [
-        (_('None'), {'fields': ['title', 'user', 'cost', 'rate', 'description', 'image']}),
+        (_('None'), {'fields': ['title', 'user', 'cost', 'description', 'image', 'category']}),
         (_('Information'), {'fields': ['id', 'slug']}),
     ]
     readonly_fields = [

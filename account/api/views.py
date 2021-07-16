@@ -2,7 +2,8 @@ from rest_framework import parsers, renderers
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.compat import coreapi, coreschema
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
 from rest_framework.schemas import coreapi as coreapi_schema
@@ -16,6 +17,7 @@ BAD_REQUEST = status.HTTP_400_BAD_REQUEST
 
 
 @api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
 def register_account_view(request):
     if request.method == 'POST':
         serialized_data = RegistrationUserSerializer(data=request.data)
@@ -84,3 +86,10 @@ class ObtainAuthToken(APIView):
 
 
 obtain_auth_token = ObtainAuthToken.as_view()
+
+
+# todo
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+def get_user_view(request, email):
+    pass

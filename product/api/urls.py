@@ -1,9 +1,11 @@
-# from django.urls import re_path
-# from .views import *
-#
-# from handlers.validators import EMAIL_REGEX
-#
-# app_name = 'product'
-# urlpatterns = [
-#     re_path(r'', account_view, name='user api'),
-# ]
+from django.urls import re_path
+from .views import *
+
+app_name = 'product'
+UUID_REGEX = '[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}'
+
+urlpatterns = [
+    re_path(r'product/(?P<slug>[0-9a-zA-Z-_]+)/', product_view, name='product api'),
+    re_path(r'product/create/', product_view, name='product create api'),
+    re_path(r'category/',category_view, name='category api')
+]
