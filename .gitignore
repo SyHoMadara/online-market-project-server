@@ -262,4 +262,4 @@ fabric.properties
 account/migrations
 product/migrations
 
-files/images
+#files/images
