@@ -31,6 +31,7 @@ def register_account_view(request):
             data = serialized_data.errors
         return Response(data=data)
 
+
 class ObtainAuthToken(APIView):
     throttle_classes = ()
     permission_classes = ()
@@ -80,5 +81,6 @@ class ObtainAuthToken(APIView):
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token': token.key})
+
 
 obtain_auth_token = ObtainAuthToken.as_view()

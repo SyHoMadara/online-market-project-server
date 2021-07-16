@@ -83,11 +83,13 @@ class UserManager(BaseUserManager):
     def create_user(self, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('email_verified', False)
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('email_verified', True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
@@ -201,6 +203,7 @@ class User(AbstractUser):
     hide_email = models.BooleanField(default=True)
     hide_phone_number = models.BooleanField(default=True)
     hide_image_profile = models.BooleanField(default=True)
+    email_verified = models.BooleanField(default=False)
 
     # methods
     def __str__(self):
