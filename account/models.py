@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
 
 
+
 def update_last_login(sender, user, **kwargs):
     """
     A signal receiver which updates the last_login date for
@@ -181,18 +182,15 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
-PROFILE_IMAGE_FILE_PATH = 'files/images/users/'
-
-
 def get_image_profile_default():
-    return 'files/images/users/default/default_image.jpg'
+    return 'users/default/default_image.png'
 
 
 class User(AbstractUser):
     # user properties
     phone_number = models.CharField(verbose_name='Phone Number', max_length=14, null=True, blank=True)
     profile_image = models.ImageField(
-        default=get_image_profile_default,
+        default='users/default/default_image.png',
         verbose_name='Image Profile',
         upload_to='users/'
     )
@@ -210,6 +208,8 @@ class User(AbstractUser):
         return self.email
 
     def save(self, *args, **kwargs):
+        # if bool(self.profile_image):
+        #     self.profile_image.delete()
         self.profile_image.name = f'{self.email.__str__()}_profile_image.png'
         super().save(*args, **kwargs)
 

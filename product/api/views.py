@@ -51,7 +51,7 @@ def creat_product_view(request):
         data['description'] = product.description
         data['slug'] = product.slug
         data['category'] = product.category.slug
-        data['image'] = product.image.name
+        data['image'] = product.image.path
     else:
         data = serialized_data.errors
     return Response(data=data)

@@ -27,6 +27,4 @@ urlpatterns = [
     re_path(r'^api/user/', include('account.api.urls', namespace='user_api')),
     re_path(r'^api/product/', include('product.api.urls', namespace='product_api')),
 
-]
-
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
