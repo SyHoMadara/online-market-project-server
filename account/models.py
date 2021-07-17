@@ -185,7 +185,7 @@ PROFILE_IMAGE_FILE_PATH = 'files/images/users/'
 
 
 def get_image_profile_default():
-    return 'users/default/default_image.jpg'
+    return 'files/images/users/default/default_image.jpg'
 
 
 class User(AbstractUser):

@@ -26,25 +26,21 @@ def creat_product_view(request):
     user = request.user
     product = Product(user=user)
     data = {}
-    # if 'category_slug' in request.data:
-    #     try:
-    #         category = ProductCategory.objects.get(slug=request.data['category_slug'])
-    #     except ProductCategory.DoesNotExist:
-    #         data['response'] = 'category dose not exist'
-    #         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-    #     request.data['category'] = CategorySerializer(category).data
-    # else:
-    #     request.data['category'] = CategorySerializer(ProductCategory.objects.get(slug='another')).data
+    if 'category_slug' in request.data:
+        try:
+            category = ProductCategory.objects.get(slug=request.data['category_slug'])
+        except ProductCategory.DoesNotExist:
+            data['response'] = 'category dose not exist'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
 
-    # try:
-    #     file = request.data['file']
-    # except KeyError:
-    #     raise ParseError('Request has no resource file attached')
-    # product = Product.objects.create(image=file, ....)
+    else:
+        category = ProductCategory.objects.get(slug='another')
+
     if 'image' in request.data:
         image = request.data['image']
         product.image = image
 
+    product.category = category
     serialized_data = ProductSerializer(product, data=request.data)
 
     if serialized_data.is_valid():
@@ -75,11 +71,26 @@ def update_product_view(request, slug):
         data['response'] = "You don't have permission on this product"
         return Response(data=data, status=status.HTTP_403_FORBIDDEN)
 
+    if 'category_slug' in request.data:
+        try:
+            category = ProductCategory.objects.get(slug=request.data['category_slug'])
+        except ProductCategory.DoesNotExist:
+            data['response'] = 'category dose not exist'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+    else:
+        category = ProductCategory.objects.get(slug='another')
+
+    if 'image' in request.data:
+        image = request.data['image']
+        product.image = image
+
+    product.category = category
+
     serialized_data = ProductSerializer(product, data=request.data)
     if serialized_data.is_valid():
         serialized_data.save()
         data['response'] = 'update successfully complete'
-        data['category slug'] = serialized_data.category
         return Response(data=data, status=status.HTTP_200_OK)
     return Response(serialized_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -119,16 +130,22 @@ def get_product_view(request, slug):
     return Response(serializer.data)
 
 
-# todo
-@api_view(['GET', ])
-@permission_classes([IsAuthenticated, ])
-def get_image_view(request, slug):
-    # todo make difference between profile and product image
-    pass
+# def get_all_product(category, data={}):
 
 
-# todo
+# @api_view(['GET', ])
+# @permission_classes([IsAuthenticated, ])
+# def get_product_of_category_view(request, slug):
+
+
+
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
-def category_view():
-    pass
+def category_view(request):
+    data = {}
+    for category in ProductCategory.objects.all():
+        serializer = CategorySerializer(category)
+        data[category.__str__()] = serializer.data
+        data[category.__str__()]['name'] = category.__str__()
+
+    return Response(data)

@@ -1,4 +1,6 @@
 import uuid
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
 from mptt.models import MPTTModel, TreeForeignKey
@@ -40,16 +42,16 @@ from account.models import User
 # )
 class ProductCategory(MPTTModel):
     name = models.CharField(max_length=200)
-    id = models.UUIDField(verbose_name="UUID", default=uuid.uuid4, editable=False)
-    slug = models.SlugField(unique=True, allow_unicode=True, blank=True, primary_key=True)
+    id = models.UUIDField(verbose_name="UUID", default=uuid.uuid4, primary_key=True)
+    slug = models.SlugField(unique=True, allow_unicode=True, blank=True)
     is_root = models.BooleanField(default=False)
     parent = TreeForeignKey(
         'ProductCategory',
         blank=True,
         null=True,
-        related_name='child',
         on_delete=models.CASCADE
     )
+    child_slug = models.SlugField(allow_unicode=True, blank=True, null=True)
 
     class Meta:
         unique_together = ('name', 'parent')
@@ -63,6 +65,10 @@ class ProductCategory(MPTTModel):
             full_path.append(k.name)
             k = k.parent
         self.slug = '.'.join(list(map(slugify, full_path[::-1])))  # digital-and-tools/laptop
+        # check that doesn't exist with this name and user name
+        for category in ProductCategory.objects.all():
+            if category.slug == self.slug:
+                self.id = category.id
         # set is_root value
         self.is_root = not bool(self.parent)
         super().save(*args, **kwargs)
@@ -115,6 +121,7 @@ class Product(models.Model):
         # set default category
         if not self.category:
             self.category = ProductCategory.objects.get(slug='another')
+
         super().save(force_insert, force_update, using, update_fields)
 
     def __str__(self):

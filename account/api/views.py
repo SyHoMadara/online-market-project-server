@@ -6,21 +6,20 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.compat import coreapi, coreschema
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
 from rest_framework.schemas import coreapi as coreapi_schema
 from rest_framework.views import APIView
 
 from account.api.serializer import UserSerializer, RegistrationUserSerializer, AuthTokenSerializer
-from ..models import User
 
 OK = status.HTTP_200_OK
 BAD_REQUEST = status.HTTP_400_BAD_REQUEST
 
 
 @api_view(['POST', ])
-@permission_classes([IsAuthenticated, ])
+@permission_classes([AllowAny, ])
 def register_account_view(request):
     if request.method == 'POST':
         serialized_data = RegistrationUserSerializer(data=request.data)
@@ -28,9 +27,6 @@ def register_account_view(request):
         if serialized_data.is_valid():
             user = serialized_data.save()
             data['response'] = 'successfully registered a new user'
-            data['email'] = user.email
-            data['fist_name'] = user.first_name
-            data['last_name'] = user.last_name
             data['token'] = Token.objects.get(user=user).key
         else:
             data = serialized_data.errors
