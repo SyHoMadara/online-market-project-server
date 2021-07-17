@@ -1,13 +1,7 @@
-from rest_framework import parsers, renderers
 from rest_framework import status
-from rest_framework.authtoken.models import Token
-from rest_framework.compat import coreapi, coreschema
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.schemas import ManualSchema
-from rest_framework.schemas import coreapi as coreapi_schema
-from rest_framework.views import APIView
 
 from product.api.serializer import *
 
@@ -29,11 +23,30 @@ def product_view(request, slug=None):
 
 
 def creat_product_view(request):
-
     user = request.user
     product = Product(user=user)
-    serialized_data = ProductSerializer(product, data=request.data)
     data = {}
+    # if 'category_slug' in request.data:
+    #     try:
+    #         category = ProductCategory.objects.get(slug=request.data['category_slug'])
+    #     except ProductCategory.DoesNotExist:
+    #         data['response'] = 'category dose not exist'
+    #         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+    #     request.data['category'] = CategorySerializer(category).data
+    # else:
+    #     request.data['category'] = CategorySerializer(ProductCategory.objects.get(slug='another')).data
+
+    # try:
+    #     file = request.data['file']
+    # except KeyError:
+    #     raise ParseError('Request has no resource file attached')
+    # product = Product.objects.create(image=file, ....)
+    if 'image' in request.data:
+        image = request.data['image']
+        product.image = image
+
+    serialized_data = ProductSerializer(product, data=request.data)
+
     if serialized_data.is_valid():
         product = serialized_data.save()
         data['response'] = 'successfully created'
@@ -41,6 +54,8 @@ def creat_product_view(request):
         data['cost'] = product.cost
         data['description'] = product.description
         data['slug'] = product.slug
+        data['category'] = product.category.slug
+        data['image'] = product.image.name
     else:
         data = serialized_data.errors
     return Response(data=data)
@@ -54,9 +69,9 @@ def update_product_view(request, slug):
     except Product.DoesNotExist:
         data['response'] = 'product not found'
         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-    user = request.uesr
+    user = request.user
     # check for permission
-    if user != product.user:
+    if user != product.user and not user.is_superuser:
         data['response'] = "You don't have permission on this product"
         return Response(data=data, status=status.HTTP_403_FORBIDDEN)
 
@@ -64,20 +79,21 @@ def update_product_view(request, slug):
     if serialized_data.is_valid():
         serialized_data.save()
         data['response'] = 'update successfully complete'
+        data['category slug'] = serialized_data.category
         return Response(data=data, status=status.HTTP_200_OK)
     return Response(serialized_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def delete_product_view(request, slug):
     global product
-
     data = {}
     try:
         product = Product.objects.get(slug=slug)
     except Product.DoesNotExist:
         data['response'] = 'product not found'
         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-    user = request.uesr
+
+    user = request.user
     # check for permission
     if user != product.user:
         data['response'] = "You don't have permission on this product"
@@ -99,7 +115,7 @@ def get_product_view(request, slug):
         data['response'] = 'product not found'
         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = ProductGetterSerializer(instance=product)
+    serializer = ProductSerializer(instance=product)
     return Response(serializer.data)
 
 
@@ -116,4 +132,3 @@ def get_image_view(request, slug):
 @permission_classes([IsAuthenticated, ])
 def category_view():
     pass
-

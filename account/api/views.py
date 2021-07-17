@@ -1,3 +1,6 @@
+from django.contrib.auth import password_validation
+from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ValidationError
 from rest_framework import parsers, renderers
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -32,6 +35,23 @@ def register_account_view(request):
         else:
             data = serialized_data.errors
         return Response(data=data)
+
+
+@api_view(['PUT', ])
+@permission_classes([IsAuthenticated, ])
+def update_account_view(request):
+    user = request.user
+    data = {}
+    if 'profile_image' in request.data:
+        user.profile_image.delete()
+    serializer = UserSerializer(user, request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    else:
+        data['response'] = 'Update information failed'
+        data['errors'] = serializer.errors
+        return Response(data, status.HTTP_400_BAD_REQUEST)
 
 
 class ObtainAuthToken(APIView):

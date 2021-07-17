@@ -15,10 +15,8 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'profile_image',
+            'phone_number',
             'date_joined',
-            'is_superuser',
-            'is_staff',
-            'is_active',
         ]
 
 

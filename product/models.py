@@ -40,8 +40,8 @@ from account.models import User
 # )
 class ProductCategory(MPTTModel):
     name = models.CharField(max_length=200)
-    id = models.UUIDField(verbose_name="UUID", default=uuid.uuid4, editable=False, primary_key=True)
-    slug = models.SlugField(unique=True, allow_unicode=True, blank=True)
+    id = models.UUIDField(verbose_name="UUID", default=uuid.uuid4, editable=False)
+    slug = models.SlugField(unique=True, allow_unicode=True, blank=True, primary_key=True)
     is_root = models.BooleanField(default=False)
     parent = TreeForeignKey(
         'ProductCategory',
@@ -78,7 +78,7 @@ class ProductCategory(MPTTModel):
 
 
 def get_image_profile_default():
-    return 'files/images/products/default/default_image.jpg'
+    return 'products/default/default_image.jpg'
 
 
 class Product(models.Model):
@@ -90,7 +90,7 @@ class Product(models.Model):
     image = models.ImageField(
         default=get_image_profile_default,
         verbose_name='Image',
-        upload_to='files/images/products/'
+        upload_to='products/'
     )
     description = models.CharField(
         max_length=400,

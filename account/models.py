@@ -185,7 +185,7 @@ PROFILE_IMAGE_FILE_PATH = 'files/images/users/'
 
 
 def get_image_profile_default():
-    return 'files/images/users/default/default_image.jpg'
+    return 'users/default/default_image.jpg'
 
 
 class User(AbstractUser):
@@ -194,7 +194,7 @@ class User(AbstractUser):
     profile_image = models.ImageField(
         default=get_image_profile_default,
         verbose_name='Image Profile',
-        upload_to='files/images/users/'
+        upload_to='users/'
     )
 
     # settings
