@@ -19,6 +19,10 @@ python -m pip install djangorestframework
 clear
 
 # migrate
+rm -rf account/migrations/*
+rm -rf product/migrations/*
+touch account/migrations/__init__.py
+touch product/migrations/__init__.py
 python manage.py makemigrations
 python manage.py migrate
 clear

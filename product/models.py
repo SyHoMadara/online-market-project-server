@@ -93,7 +93,7 @@ class Product(models.Model):
     cost = models.DecimalField(decimal_places=0, max_digits=12, default=0)
     user = models.ForeignKey(User, blank=False, on_delete=models.CASCADE)
     image = models.ImageField(
-        default='product/default/default_image.png',
+        default='products/default/default_image.png',
         verbose_name='Image',
         upload_to='products/',
         null=False,
@@ -115,7 +115,8 @@ class Product(models.Model):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         # create slug
         self.slug = f'{slugify(self.user.email)}{self.id.__str__()}'
-        # self.image.name = f'{self.id}_product_image.png'
+        self.image.delete()
+        self.image.name = f'{self.id}_product_image.png'
         # set default description
         if not self.description or self.description == "":
             self.description = f'{self.title} you can pay for it {self.cost.__str__()}$'
