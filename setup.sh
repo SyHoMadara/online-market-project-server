@@ -8,7 +8,7 @@ clear
 
 # installing python requirements
 python -m pip install Django
-python -m install django-mptt
+python -m pip install django-mptt
 # install Pillow for images
 python -m pip install Pillow
 # rest framework
