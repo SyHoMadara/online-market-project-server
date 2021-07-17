@@ -42,12 +42,28 @@ def register_account_view(request):
 def update_account_view(request):
     user = request.user
     data = {}
+    request.data['email'] = user.email
+    request.data['date_joined'] = user.date_joined
+    if 'password' in request.data:
+        password = request.data['password']
+        errors = {}
+        try:
+            password_validation.validate_password(password, user)
+        except ValidationError as e:
+            errors['password'] = []
+            for ex in e:
+                errors['password'].append(ex)
+            errors['response'] = "Password is invalid"
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        user.password = make_password(password)
+
     if 'profile_image' in request.data:
         user.profile_image.delete()
     serializer = UserSerializer(user, request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data)
+        data['response'] = 'update successfully complete'
+        return Response(data)
     else:
         data['response'] = 'Update information failed'
         data['errors'] = serializer.errors
