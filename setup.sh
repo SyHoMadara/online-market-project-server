@@ -24,7 +24,7 @@ python manage.py migrate
 clear
 
 # remove setup
-rm setup.cmd
+rm setup.bat
 rm setup.sh
 
 PS1=BACKUP_PS1
