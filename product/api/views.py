@@ -39,7 +39,9 @@ def creat_product_view(request):
     if 'image' in request.data:
         image = request.data['image']
         product.image = image
-
+    else:
+        data['response'] = 'image most be chosen'
+        return Response(data)
     product.category = category
     serialized_data = ProductSerializer(product, data=request.data)
 
@@ -84,6 +86,9 @@ def update_product_view(request, slug):
     if 'image' in request.data:
         image = request.data['image']
         product.image = image
+    else:
+        data['response'] = 'image most be chosen'
+        return Response(data)
 
     product.category = category
 
@@ -130,13 +135,22 @@ def get_product_view(request, slug):
     return Response(serializer.data)
 
 
-# def get_all_product(category, data={}):
-
-
-# @api_view(['GET', ])
-# @permission_classes([IsAuthenticated, ])
-# def get_product_of_category_view(request, slug):
-
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+def get_product_of_category_view(request, slug):
+    data = {}
+    try:
+        category = ProductCategory.objects.get(slug=slug)
+    except ProductCategory.DoesNotExist:
+        data['response'] = 'Category not found'
+        return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+    if category.is_root:
+        data['response'] = 'Category can not be root'
+    else:
+        for pro in Product.objects.all():
+            if pro.category == category:
+                data[pro.slug.__str__()] = ProductSerializer(pro).data
+        return Response(data)
 
 
 @api_view(['GET', ])

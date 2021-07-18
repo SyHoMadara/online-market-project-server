@@ -210,7 +210,7 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         # if bool(self.profile_image):
         #     self.profile_image.delete()
-        self.profile_image.name = f'{self.email.__str__()}_profile_image.png'
+        # self.profile_image.name = f'{self.email.__str__()}_profile_image.png'
         super().save(*args, **kwargs)
 
 

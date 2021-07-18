@@ -1,6 +1,9 @@
+import base64
+
 from django.contrib.auth import password_validation, authenticate
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -8,6 +11,8 @@ from ..models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    base64_image = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
@@ -17,7 +22,15 @@ class UserSerializer(serializers.ModelSerializer):
             'profile_image',
             'phone_number',
             'date_joined',
+            'base64_image',
         ]
+
+    def get_base64_image(self, obj):
+        f = open(obj.image.path, 'rb')
+        image = File(f)
+        data = base64.b64encode(image.read())
+        f.close()
+        return data
 
 
 class RegistrationUserSerializer(serializers.ModelSerializer):

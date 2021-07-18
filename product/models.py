@@ -49,6 +49,7 @@ class ProductCategory(MPTTModel):
         'ProductCategory',
         blank=True,
         null=True,
+        related_name='child',
         on_delete=models.CASCADE
     )
 
@@ -63,7 +64,7 @@ class ProductCategory(MPTTModel):
         while k is not None:
             full_path.append(k.name)
             k = k.parent
-        self.slug = '.'.join(list(map(slugify, full_path[::-1])))  # digital-and-tools/laptop
+        self.slug = '_'.join(list(map(slugify, full_path[::-1])))  # digital-and-tools/laptop
         # check that doesn't exist with this name and user name
         for category in ProductCategory.objects.all():
             if category.slug == self.slug:
@@ -106,7 +107,6 @@ class Product(models.Model):
     )
     category = models.ForeignKey(
         'ProductCategory',
-        related_name="Products",
         null=True,
         blank=True,
         on_delete=models.CASCADE,
@@ -115,8 +115,6 @@ class Product(models.Model):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         # create slug
         self.slug = f'{slugify(self.user.email)}{self.id.__str__()}'
-        self.image.delete()
-        self.image.name = f'{self.id}_product_image.png'
         # set default description
         if not self.description or self.description == "":
             self.description = f'{self.title} you can pay for it {self.cost.__str__()}$'
