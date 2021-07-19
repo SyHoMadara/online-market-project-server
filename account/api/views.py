@@ -18,19 +18,28 @@ OK = status.HTTP_200_OK
 BAD_REQUEST = status.HTTP_400_BAD_REQUEST
 
 
+@api_view()
+@permission_classes([AllowAny, ])
+def homepage(request):
+    return Response([{'response': 'ist work', 'rrr': 'hihi'}, {'nothing': "is nothing"}])
+
+
 @api_view(['POST', ])
 @permission_classes([AllowAny, ])
 def register_account_view(request):
     if request.method == 'POST':
+        this_status = None
         serialized_data = RegistrationUserSerializer(data=request.data)
         data = {}
         if serialized_data.is_valid():
             user = serialized_data.save()
             data['response'] = 'successfully registered a new user'
             data['token'] = Token.objects.get(user=user).key
+            this_status = status.HTTP_200_OK
         else:
             data = serialized_data.errors
-        return Response(data=data)
+            this_status = status.HTTP_400_BAD_REQUEST
+        return Response(data=data, status=this_status)
 
 
 @api_view(['PUT', ])
@@ -64,6 +73,14 @@ def update_account_view(request):
         data['response'] = 'Update information failed'
         data['errors'] = serializer.errors
         return Response(data, status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+def get_user_view(request):
+    user = request.user
+    serializer = UserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ObtainAuthToken(APIView):
@@ -111,17 +128,11 @@ class ObtainAuthToken(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key})
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'response': 'Login successful', 'token': token.key})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 obtain_auth_token = ObtainAuthToken.as_view()
-
-
-# todo
-@api_view(['GET', ])
-@permission_classes([IsAuthenticated, ])
-def get_user_view(request, email):
-    pass

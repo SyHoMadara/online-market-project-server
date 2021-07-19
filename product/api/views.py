@@ -138,28 +138,30 @@ def get_product_view(request, slug):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 def get_product_of_category_view(request, slug):
-    data = {}
+    data = [{'response': ""}]
     try:
         category = ProductCategory.objects.get(slug=slug)
     except ProductCategory.DoesNotExist:
-        data['response'] = 'Category not found'
+        data[0]['response'] = 'Category not found'
         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
     if category.is_root:
-        data['response'] = 'Category can not be root'
+        data[0]['response'] = 'Category can not be root'
     else:
         for pro in Product.objects.all():
             if pro.category == category:
-                data[pro.slug.__str__()] = ProductSerializer(pro).data
+                data += [ProductSerializer(pro).data]
         return Response(data)
 
 
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 def category_view(request):
-    data = {}
+    data = []
+    i = 0
     for category in ProductCategory.objects.all():
         serializer = CategorySerializer(category)
-        data[category.__str__()] = serializer.data
-        data[category.__str__()]['name'] = category.__str__()
+        data += [serializer.data]
+        data[i]['name'] = category.__str__()
+        i += 1
 
     return Response(data)

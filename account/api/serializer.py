@@ -19,14 +19,16 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'first_name',
             'last_name',
-            'profile_image',
             'phone_number',
             'date_joined',
             'base64_image',
         ]
 
-    def get_base64_image(self, obj):
-        f = open(obj.image.path, 'rb')
+    def get_base64_image(self, obj: User):
+        try:
+            f = open(obj.profile_image.path, 'rb')
+        except OSError:
+            return None
         image = File(f)
         data = base64.b64encode(image.read())
         f.close()
