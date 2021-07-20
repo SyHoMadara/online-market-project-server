@@ -26,7 +26,8 @@ def product_view(request, slug=None):
 def creat_product_view(request):
     user = request.user
     this_status = None
-    request.data['user'] = user
+    product = Product()
+    product.user = user
     data = {}
     if 'category_slug' in request.data:
         try:
@@ -41,8 +42,8 @@ def creat_product_view(request):
     # if 'base64_image' in request.data:
     #     image = request.data['base64_image']
     #     product.image =
-    request.data['category'] = category
-    serialized_data = CreateProductSerializer(data=request.data)
+    product.category = category
+    serialized_data = CreateProductSerializer(product, data=request.data)
 
     if serialized_data.is_valid():
         product = serialized_data.save()
