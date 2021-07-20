@@ -5,14 +5,15 @@ from rest_framework import serializers
 from product.models import Product, ProductCategory
 from account.models import User;
 
-
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
-        fields = [
-            'slug',
-        ]
+        fields = "__all__"
 
+class CreateProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = "__all__"
 
 class ProductSerializer(serializers.ModelSerializer):
     base64_image = serializers.SerializerMethodField()

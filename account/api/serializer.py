@@ -22,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
             'phone_number',
             'date_joined',
             'base64_image',
+            'is_superuser',
         ]
 
     def get_base64_image(self, obj: User):
@@ -33,6 +34,12 @@ class UserSerializer(serializers.ModelSerializer):
         data = base64.b64encode(image.read())
         f.close()
         return data
+
+
+class MyUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"
 
 
 class RegistrationUserSerializer(serializers.ModelSerializer):

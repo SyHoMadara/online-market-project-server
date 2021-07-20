@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from account.api.serializer import *
 
 from product.api.serializer import *
 
@@ -11,11 +12,11 @@ from product.api.serializer import *
 def product_view(request, slug=None):
     method = request.method
     if method == 'PUT':
-        return update_product_view(request, slug)
+        return update_product_view(request)
     elif method == 'DELETE':
-        return delete_product_view(request, slug)
+        return delete_product_view(request)
     elif method == 'GET':
-        return get_product_view(request, slug)
+        return get_product_view(request)
     elif method == 'POST':
         return creat_product_view(request)
     else:
@@ -24,7 +25,8 @@ def product_view(request, slug=None):
 
 def creat_product_view(request):
     user = request.user
-    product = Product(user=user)
+    this_status = None
+    request.data['user'] = user
     data = {}
     if 'category_slug' in request.data:
         try:
@@ -36,14 +38,11 @@ def creat_product_view(request):
     else:
         category = ProductCategory.objects.get(slug='another')
 
-    if 'image' in request.data:
-        image = request.data['image']
-        product.image = image
-    else:
-        data['response'] = 'image most be chosen'
-        return Response(data)
-    product.category = category
-    serialized_data = ProductSerializer(product, data=request.data)
+    # if 'base64_image' in request.data:
+    #     image = request.data['base64_image']
+    #     product.image =
+    request.data['category'] = category
+    serialized_data = CreateProductSerializer(data=request.data)
 
     if serialized_data.is_valid():
         product = serialized_data.save()
@@ -53,15 +52,18 @@ def creat_product_view(request):
         data['description'] = product.description
         data['slug'] = product.slug
         data['category'] = product.category.slug
-        data['image'] = product.image.path
+        this_status = status.HTTP_200_OK
+        # data['image'] = product.image.path
     else:
+        this_status = status.HTTP_400_BAD_REQUEST
         data = serialized_data.errors
-    return Response(data=data)
+    return Response(data=data, status=this_status)
 
 
-def update_product_view(request, slug):
+def update_product_view(request):
     global product
     data = {}
+    slug = request['slug']
     try:
         product = Product.objects.get(slug=slug)
     except Product.DoesNotExist:
@@ -100,9 +102,10 @@ def update_product_view(request, slug):
     return Response(serialized_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def delete_product_view(request, slug):
+def delete_product_view(request):
     global product
     data = {}
+    slug = request['slug']
     try:
         product = Product.objects.get(slug=slug)
     except Product.DoesNotExist:
@@ -122,8 +125,9 @@ def delete_product_view(request, slug):
     return Response(data=data)
 
 
-def get_product_view(request, slug):
+def get_product_view(request):
     global product
+    slug = request['slug']
     data = {}
     try:
         product = Product.objects.get(slug=slug)

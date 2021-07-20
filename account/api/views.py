@@ -47,6 +47,7 @@ def register_account_view(request):
 def update_account_view(request):
     user = request.user
     data = {}
+    request.data['is_superuser'] = user.is_superuser
     request.data['email'] = user.email
     request.data['date_joined'] = user.date_joined
     if 'password' in request.data:
