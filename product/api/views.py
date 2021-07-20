@@ -43,7 +43,7 @@ def creat_product_view(request):
     #     image = request.data['base64_image']
     #     product.image =
     product.category = category
-    serialized_data = CreateProductSerializer(product, data=request.data)
+    serialized_data = ProductSerializer(product, data=request.data)
 
     if serialized_data.is_valid():
         product = serialized_data.save()
