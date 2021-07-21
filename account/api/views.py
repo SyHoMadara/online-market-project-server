@@ -13,6 +13,7 @@ from rest_framework.schemas import coreapi as coreapi_schema
 from rest_framework.views import APIView
 
 from account.api.serializer import UserSerializer, RegistrationUserSerializer, AuthTokenSerializer
+from account.models import User
 
 OK = status.HTTP_200_OK
 BAD_REQUEST = status.HTTP_400_BAD_REQUEST
@@ -82,6 +83,22 @@ def get_user_view(request):
     user = request.user
     serializer = UserSerializer(user)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+def get_user_by_email(request):
+    data = {}
+    this_status = None
+    try:
+        user = User.objects.get(email=request.data['email'])
+    except User.DoesNotExist:
+        data['response'] = "User doesn't exist"
+        this_status = status.HTTP_404_NOT_FOUND
+        return Response(data=data, status=this_status)
+
+    serializer = UserSerializer(user)
+    this_status = status.HTTP_200_OK
+    return Response(serializer.data,status=this_status)
 
 
 class ObtainAuthToken(APIView):

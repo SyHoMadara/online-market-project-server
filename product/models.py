@@ -94,11 +94,10 @@ class Product(models.Model):
     cost = models.DecimalField(decimal_places=0, max_digits=12, default=0)
     user = models.ForeignKey(User, blank=False, on_delete=models.CASCADE)
     image = models.ImageField(
-        default='products/default/default_image.png',
         verbose_name='Image',
         upload_to='products/',
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
     )
     description = models.CharField(
         max_length=400,

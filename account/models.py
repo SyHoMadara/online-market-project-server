@@ -202,6 +202,7 @@ class User(AbstractUser):
     hide_phone_number = models.BooleanField(default=True)
     hide_image_profile = models.BooleanField(default=True)
     email_verified = models.BooleanField(default=False)
+    registered_google_account = models.BooleanField(default=False, null=True, blank=True)
 
     # methods
     def __str__(self):

@@ -7,16 +7,14 @@ from account.api.serializer import *
 from product.api.serializer import *
 
 
-@api_view(['PUT', 'DELETE', 'GET', 'POST'])
+@api_view(['PUT', 'DELETE','POST', ])
 @permission_classes([IsAuthenticated, ])
-def product_view(request, slug=None):
+def product_view(request):
     method = request.method
     if method == 'PUT':
         return update_product_view(request)
     elif method == 'DELETE':
         return delete_product_view(request)
-    elif method == 'GET':
-        return get_product_view(request)
     elif method == 'POST':
         return creat_product_view(request)
     else:
@@ -64,7 +62,7 @@ def creat_product_view(request):
 def update_product_view(request):
     global product
     data = {}
-    slug = request['slug']
+    slug = request.data['slug']
     try:
         product = Product.objects.get(slug=slug)
     except Product.DoesNotExist:
@@ -106,7 +104,7 @@ def update_product_view(request):
 def delete_product_view(request):
     global product
     data = {}
-    slug = request['slug']
+    slug = request.data['slug']
     try:
         product = Product.objects.get(slug=slug)
     except Product.DoesNotExist:
@@ -125,20 +123,16 @@ def delete_product_view(request):
         data['response'] = 'Delete filed. Try again'
     return Response(data=data)
 
-
-def get_product_view(request):
-    global product
-    slug = request['slug']
-    data = {}
-    try:
-        product = Product.objects.get(slug=slug)
-    except Product.DoesNotExist:
-        data['response'] = 'product not found'
-        return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-
-    serializer = ProductSerializer(instance=product)
-    return Response(serializer.data)
-
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+def get_all_product_view(request):
+    data = [{'response': "Getting all product successful"}]
+    i = 0
+    for pro in Product.objects.all():
+        serializer = ProductSerializer(pro)
+        data += [serializer.data]
+        data[i]['email'] = pro.user.email
+    return Response(data=data, status=status.HTTP_200_OK)
 
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
@@ -168,5 +162,4 @@ def category_view(request):
         data += [serializer.data]
         data[i]['name'] = category.__str__()
         i += 1
-
-    return Response(data)
+    return Response(data,status=status.HTTP_200_OK)
