@@ -7,7 +7,7 @@ from account.api.serializer import *
 from product.api.serializer import *
 
 
-@api_view(['PUT', 'DELETE','POST', ])
+@api_view(['PUT', 'DELETE', 'POST', ])
 @permission_classes([IsAuthenticated, ])
 def product_view(request):
     method = request.method
@@ -113,7 +113,7 @@ def delete_product_view(request):
 
     user = request.user
     # check for permission
-    if user != product.user:
+    if user != product.user and not user.is_superuser:
         data['response'] = "You don't have permission on this product"
         return Response(data=data, status=status.HTTP_403_FORBIDDEN)
     operation = product.delete()
@@ -122,6 +122,7 @@ def delete_product_view(request):
     else:
         data['response'] = 'Delete filed. Try again'
     return Response(data=data)
+
 
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
@@ -133,6 +134,7 @@ def get_all_product_view(request):
         data += [serializer.data]
         data[i]['email'] = pro.user.email
     return Response(data=data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
@@ -162,4 +164,4 @@ def category_view(request):
         data += [serializer.data]
         data[i]['name'] = category.__str__()
         i += 1
-    return Response(data,status=status.HTTP_200_OK)
+    return Response(data, status=status.HTTP_200_OK)
