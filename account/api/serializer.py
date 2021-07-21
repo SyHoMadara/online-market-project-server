@@ -11,7 +11,7 @@ from ..models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    base64_image = serializers.SerializerMethodField()
+    # base64_image = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -21,19 +21,19 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
             'phone_number',
             'date_joined',
-            'base64_image',
+            # 'base64_image',
             'is_superuser',
         ]
 
-    def get_base64_image(self, obj: User):
-        try:
-            f = open(obj.profile_image.path, 'rb')
-        except OSError:
-            return None
-        image = File(f)
-        data = base64.b64encode(image.read())
-        f.close()
-        return data
+    # def get_base64_image(self, obj: User):
+    #     try:
+    #         f = open(obj.profile_image.path, 'rb')
+    #     except OSError:
+    #         return None
+    #     image = File(f)
+    #     data = base64.b64encode(image.read())
+    #     f.close()
+    #     return data
 
 
 class MyUserSerializer(serializers.ModelSerializer):

@@ -7,15 +7,15 @@ from account.api.serializer import *
 from product.api.serializer import *
 
 
-@api_view(['PUT', 'DELETE', 'POST', ])
+@api_view(['PUT', 'POST', ])
 @permission_classes([IsAuthenticated, ])
 def product_view(request):
     method = request.method
-    if method == 'PUT':
-        return update_product_view(request)
-    elif method == 'DELETE':
-        return delete_product_view(request)
-    elif method == 'POST':
+    # if method == 'PUT':
+    #     return update_product_view(request)
+    # elif method == 'DELETE':
+    #     return delete_product_view(request)
+    if method == 'POST':
         return creat_product_view(request)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -58,7 +58,8 @@ def creat_product_view(request):
         data = serialized_data.errors
     return Response(data=data, status=this_status)
 
-
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
 def update_product_view(request):
     global product
     data = {}
@@ -87,9 +88,6 @@ def update_product_view(request):
     if 'image' in request.data:
         image = request.data['image']
         product.image = image
-    else:
-        data['response'] = 'image most be chosen'
-        return Response(data)
 
     product.category = category
 
@@ -100,7 +98,8 @@ def update_product_view(request):
         return Response(data=data, status=status.HTTP_200_OK)
     return Response(serialized_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
 def delete_product_view(request):
     global product
     data = {}
@@ -121,7 +120,7 @@ def delete_product_view(request):
         data['response'] = 'Delete successfully complete'
     else:
         data['response'] = 'Delete filed. Try again'
-    return Response(data=data)
+    return Response(data=data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', ])

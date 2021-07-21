@@ -113,7 +113,7 @@ class Product(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         # create slug
-        self.slug = f'{slugify(self.user.email)}{self.id.__str__()}'
+        self.slug = f'{self.id.__str__()}'
         # set default description
         if not self.description or self.description == "":
             self.description = f'{self.title} you can pay for it {self.cost.__str__()}$'

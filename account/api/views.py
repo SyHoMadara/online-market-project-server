@@ -36,6 +36,7 @@ def register_account_view(request):
             user = serialized_data.save()
             data['response'] = 'successfully registered a new user'
             data['token'] = Token.objects.get(user=user).key
+            data['email'] = user.email
             this_status = status.HTTP_200_OK
         else:
             data = serialized_data.errors
@@ -43,7 +44,7 @@ def register_account_view(request):
         return Response(data=data, status=this_status)
 
 
-@api_view(['PUT', ])
+@api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def update_account_view(request):
     user = request.user
@@ -84,11 +85,10 @@ def get_user_view(request):
     serializer = UserSerializer(user)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['GET', ])
+@api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def get_user_by_email(request):
     data = {}
-    this_status = None
     try:
         user = User.objects.get(email=request.data['email'])
     except User.DoesNotExist:
@@ -149,7 +149,7 @@ class ObtainAuthToken(APIView):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             token, created = Token.objects.get_or_create(user=user)
-            return Response({'response': 'Login successful', 'token': token.key})
+            return Response({'response': 'Login successful', 'token': token.key, 'email': user.email})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
