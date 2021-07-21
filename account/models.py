@@ -14,7 +14,6 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
 
 
-
 def update_last_login(sender, user, **kwargs):
     """
     A signal receiver which updates the last_login date for
@@ -214,6 +213,13 @@ class User(AbstractUser):
         # self.profile_image.name = f'{self.email.__str__()}_profile_image.png'
         super().save(*args, **kwargs)
 
+
+class FavoriteProduct(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE,null=False,blank=False)
+    product = models.ForeignKey('product.Product',on_delete=models.CASCADE,null=False,blank=False)
+
+    class Meta:
+        unique_together = ('user','product')
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

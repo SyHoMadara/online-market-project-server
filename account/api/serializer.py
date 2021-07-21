@@ -7,7 +7,7 @@ from django.core.files import File
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from ..models import User
+from ..models import User, FavoriteProduct
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -113,3 +113,24 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class FavoriteGetSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='email'
+    )
+
+    product = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='slug'
+    )
+
+    class Meta:
+        model = FavoriteProduct
+        fields = "__all__"
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FavoriteProduct
+        fields = "__all__"

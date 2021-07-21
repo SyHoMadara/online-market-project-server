@@ -1,6 +1,3 @@
-from django.contrib.auth import password_validation
-from django.contrib.auth.hashers import make_password
-from django.core.exceptions import ValidationError
 from rest_framework import parsers, renderers
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -12,8 +9,9 @@ from rest_framework.schemas import ManualSchema
 from rest_framework.schemas import coreapi as coreapi_schema
 from rest_framework.views import APIView
 
-from account.api.serializer import UserSerializer, RegistrationUserSerializer, AuthTokenSerializer
+from account.api.serializer import *
 from account.models import User
+from product.models import Product
 
 OK = status.HTTP_200_OK
 BAD_REQUEST = status.HTTP_400_BAD_REQUEST
@@ -85,6 +83,7 @@ def get_user_view(request):
     serializer = UserSerializer(user)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 def get_user_by_email(request):
@@ -98,7 +97,7 @@ def get_user_by_email(request):
 
     serializer = UserSerializer(user)
     this_status = status.HTTP_200_OK
-    return Response(serializer.data,status=this_status)
+    return Response(serializer.data, status=this_status)
 
 
 class ObtainAuthToken(APIView):
@@ -154,3 +153,32 @@ class ObtainAuthToken(APIView):
 
 
 obtain_auth_token = ObtainAuthToken.as_view()
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+def set_favorite_product(request):
+    data = {}
+    product_slug = request.data['slug']
+    user = request.user
+    try:
+        product = Product.objects.get(slug=product_slug)
+    except Product.DoesNotExist:
+        return Response(data={"response": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        fav = FavoriteProduct.objects.get(user=user, product=product)
+        return Response(data={"response": "this product has been add before"}, status=status.HTTP_403_FORBIDDEN)
+    except FavoriteProduct.DoesNotExist:
+        favorite_product = FavoriteProduct(user=user, product=product)
+        favorite_product.save()
+        return Response(data={"response": "setting favorite product successful"}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+def get_all_favorite_products(request):
+    user = request.user
+    data = [{'response': 'getting all favorite products successful'}]
+    for fav in user.favoriteproduct_set.all():
+        data.append(FavoriteGetSerializer(fav).data)
+    return Response(data=data, status=status.HTTP_200_OK)
